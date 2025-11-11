@@ -13,19 +13,23 @@ RUN apt-get update && apt-get install -y \
 # Copy project vào container
 COPY . /var/www/html
 
-# Set working directory
-WORKDIR /var/www/html/public
+# Set working directory về root project
+WORKDIR /var/www/html
 
-# Chmod storage & cache
-RUN chown -R www-data:www-data storage bootstrap/cache
+# Chmod storage & cache (phải làm sau COPY và trước composer)
+RUN mkdir -p storage bootstrap/cache \
+    && chown -R www-data:www-data storage bootstrap/cache \
+    && chmod -R 775 storage bootstrap/cache
 
-# Install Composer
+# Cài Composer
 COPY --from=composer:2.5 /usr/bin/composer /usr/bin/composer
 
-# Install dependencies
+# Cài dependencies Laravel
 RUN composer install --no-dev --optimize-autoloader
-RUN sed -i 's|DocumentRoot /var/www/html|DocumentRoot /var/www/html/public|' /etc/apache2/sites-available/000-default.conf
-RUN a2enmod rewrite
+
+# Cấu hình Apache dùng public/ làm DocumentRoot
+RUN sed -i 's|DocumentRoot /var/www/html|DocumentRoot /var/www/html/public|' /etc/apache2/sites-available/000-default.conf \
+    && a2enmod rewrite
 
 # Expose port
 EXPOSE 80
