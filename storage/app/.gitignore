@@ -1,0 +1,7 @@
+*
+!private/
+public/images/products/
+git add .
+git commit -m "Initial commit"
+
+!.gitignore
