@@ -14,7 +14,7 @@ RUN apt-get update && apt-get install -y \
 COPY . /var/www/html
 
 # Set working directory
-WORKDIR /var/www/html
+WORKDIR /var/www/html/public
 
 # Chmod storage & cache
 RUN chown -R www-data:www-data storage bootstrap/cache
@@ -24,6 +24,8 @@ COPY --from=composer:2.5 /usr/bin/composer /usr/bin/composer
 
 # Install dependencies
 RUN composer install --no-dev --optimize-autoloader
+RUN sed -i 's|DocumentRoot /var/www/html|DocumentRoot /var/www/html/public|' /etc/apache2/sites-available/000-default.conf
+RUN a2enmod rewrite
 
 # Expose port
 EXPOSE 80
